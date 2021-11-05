@@ -9,7 +9,6 @@ import Animated, {
 
 const Container = styled.View`
   flex: 1;
-  background: #fff;
   padding: 0 16px;
 `
 
@@ -17,18 +16,16 @@ const Button = styled.TouchableOpacity`
   position: absolute;
   bottom: 32px;
   height: 64px;
-  width: 100%;
+  right: 16px;
   left: 16px;
   background: #fff;
   border-radius: 24px;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 `
 const ButtonText = styled.Text`
-  font-weight: 600;
   font-size: 16px;
-  line-height: 24px;
 `
 
 const App = () => {
