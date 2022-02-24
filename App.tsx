@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import {
   createStackNavigator,
@@ -26,14 +26,30 @@ import {
   Dimensions,
   TouchableOpacity,
   Pressable,
+  Image,
+  FlatList,
 } from 'react-native'
 import {
   NativeSafeAreaViewProps,
   SafeAreaProvider,
   SafeAreaView,
 } from 'react-native-safe-area-context'
+import eye from './assets/eye.png'
+import message from './assets/message.png'
+import badge from './assets/badge.png'
+import star from './assets/round.png'
+import faker from 'faker'
 
 const WIDTH = Dimensions.get('window').width
+
+const ListData = Array(50)
+  .fill('')
+  .map(() => ({
+    uri: faker.image.avatar(),
+    title: faker.name.findName(),
+    message: faker.lorem.sentence(),
+    badge: faker.datatype.boolean(),
+  }))
 
 const Typography = {
   button: `
@@ -44,6 +60,19 @@ const Typography = {
   header: `
     font-size: 28px;
     line-height: 32px;
+  `,
+  caption: `
+    font-size: 12px;
+    line-height: 16px;
+  `,
+  title: `
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 25px;
+  `,
+  body: `
+    font-size: 15px;
+    line-height: 20px;
   `,
 }
 
@@ -87,27 +116,30 @@ const Header = styled(Animated.createAnimatedComponent(Pressable))`
   background: #ebf5ff;
 `
 
-type BlockProps = { width?: number; height: number; marginBottom?: number }
-
-const Block = styled.View<BlockProps>`
-  background: #fff;
-  opacity: 0.8;
-  border-radius: 10px;
-  margin-bottom: ${props => props.marginBottom || 24}px;
-  height: ${props => props.height}px;
-  ${props => props.width && `width: ${props.width}px;`}
-`
-
-type HeaderRowProps = { top?: number; width: number; height: number }
-
-const HeaderRow = styled(Animated.View)<HeaderRowProps>`
+const HeaderRow = styled(Animated.View)`
   position: absolute;
   left: 8px;
-  ${props => props.top && `top: ${props.top}px;`}
   background: #fff;
   border-radius: 10px;
-  width: ${props => props.width}px;
-  height: ${props => props.height}px;
+  padding: 6px 16px;
+`
+
+const RowText = styled.Text`
+  ${Typography.caption}
+`
+
+type IconsRowProps = { top: number }
+
+const IconsRow = styled(Animated.View)<IconsRowProps>`
+  flex-direction: row;
+  position: absolute;
+  left: 8px;
+  top: ${props => props.top}px;
+`
+
+const IconText = styled.Text`
+  ${Typography.button}
+  margin: 0 20px 0 6px;
 `
 
 const HeaderText = styled(Animated.Text)`
@@ -129,15 +161,15 @@ const Separator = styled.View`
 
 type ScrollViewProps = { extraPadding: number }
 
-const ScrollView = styled(Animated.ScrollView).attrs<ScrollViewProps>(
-  props => ({
-    contentContainerStyle: {
-      paddingTop: 32 + props.extraPadding,
-      paddingBottom: 8,
-      paddingHorizontal: 8,
-    },
-  }),
-)<ScrollViewProps>`
+const ScrollView = styled(
+  Animated.createAnimatedComponent(FlatList),
+).attrs<ScrollViewProps>(props => ({
+  contentContainerStyle: {
+    paddingTop: 32 + props.extraPadding,
+    paddingBottom: 8,
+    paddingHorizontal: 8,
+  },
+}))<ScrollViewProps>`
   flex: 1;
 `
 
@@ -332,53 +364,47 @@ const Order: React.FC<StackScreenProps<StackParamList, 'Order'>> = () => {
     }
   }, [])
 
+  const renderItem = useCallback(
+    ({ item }: { item: unknown }) => (
+      <ListItem {...(item as typeof ListData[0])} />
+    ),
+    [],
+  )
+
   return (
     <Container edges={['bottom']} ref={containerRef}>
       <Handle />
       <Header style={headerStyle} onPress={() => setBidsShown(false)}>
-        <HeaderRow style={firstBlockStyle} width={139} height={28} />
+        <HeaderRow style={firstBlockStyle}>
+          <RowText>Рассылаем ваш заказ...</RowText>
+        </HeaderRow>
         <HeaderText ref={textRef} style={textStyle}>
           Репетитор по математике
         </HeaderText>
-        <HeaderRow
-          width={161}
-          height={24}
-          top={textHeight + 28 + 16 + 8}
-          style={secondBlockStyle}
-        />
+        <IconsRow top={textHeight + 28 + 16 + 8} style={secondBlockStyle}>
+          <Image source={eye} />
+          <IconText>10</IconText>
+          <Image source={message} />
+          <IconText>1</IconText>
+        </IconsRow>
         <Separator />
       </Header>
 
       <ScrollView
-        ref={scrollViewRef}
+        data={ListData}
+        getItemLayout={(data, index) => ({
+          length: 117,
+          offset: 117 * index,
+          index,
+        })}
+        renderItem={renderItem}
+        windowSize={41}
+        ref={scrollViewRef as unknown as React.RefObject<FlatList>}
         scrollEventThrottle={1}
         onScroll={scrollHandler}
         extraPadding={headerHeight}
         showsVerticalScrollIndicator={false}
-      >
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-        <Block width={161} height={16} marginBottom={8} />
-        <Block height={66} />
-      </ScrollView>
+      />
 
       <Bids
         style={bidsStyle}
@@ -390,6 +416,74 @@ const Order: React.FC<StackScreenProps<StackParamList, 'Order'>> = () => {
     </Container>
   )
 }
+
+const ItemContainer = styled.View`
+  flex-direction: row;
+  margin-bottom: 16px;
+`
+const ItemImage = styled.Image`
+  width: 62px;
+  height: 78px;
+  margin-right: 16px;
+  border-radius: 16px;
+`
+const ItemInfoContainer = styled.View`
+  flex: 1;
+`
+const ItemTitle = styled.Text`
+  ${Typography.title}
+  margin-bottom: 6px;
+`
+const Message = styled.View`
+  border-radius: 20px;
+  border-top-left-radius: 0;
+  padding: 14px;
+  background: #f4f3f4;
+`
+const MessageText = styled.Text`
+  ${Typography.body}
+`
+const AuxRow = styled.View`
+  flex-direction: row;
+  margin-bottom: 6px;
+  align-items: center;
+`
+const AuxText = styled.Text`
+  ${Typography.caption}
+  color: #7C7D88;
+  margin: 0 16px 0 6px;
+`
+
+type ListItemProps = {
+  uri: string
+  title: string
+  message: string
+  badge: boolean
+}
+
+const ListItem: React.FC<ListItemProps> = memo(
+  ({ uri, title, message: text, badge: hasBadge }) => (
+    <ItemContainer>
+      <ItemImage source={{ uri }} />
+      <ItemInfoContainer>
+        <ItemTitle>{title}</ItemTitle>
+        <AuxRow>
+          <Image source={star} />
+          <AuxText>5.0</AuxText>
+          {hasBadge && (
+            <>
+              <Image source={badge} />
+              <AuxText>Очень хвалят</AuxText>
+            </>
+          )}
+        </AuxRow>
+        <Message>
+          <MessageText numberOfLines={1}>{text}</MessageText>
+        </Message>
+      </ItemInfoContainer>
+    </ItemContainer>
+  ),
+)
 
 type ScreenInterpolator = (
   props: StackCardInterpolationProps,
